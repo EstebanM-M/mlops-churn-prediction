@@ -1,0 +1,125 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv
+env.bak/
+venv.bak/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb_checkpoints/
+
+# MLflow ⭐
+mlruns/
+mlartifacts/
+mlflow.db
+
+# DVC ⭐ (NUEVO)
+.dvc/cache
+.dvc/tmp
+.dvc/plots
+
+# Great Expectations ⭐ (NUEVO)
+great_expectations/.ge_store_backend_id
+great_expectations/uncommitted/
+great_expectations/checkpoints/*.json
+great_expectations/expectations/.ge_store_backend_id
+
+# Evidently ⭐ (NUEVO)
+evidently_reports/
+*.html
+
+# Alembic ⭐ (NUEVO)
+alembic/versions/*.pyc
+
+# Data (no subir datos grandes)
+data/raw/*.csv
+data/raw/*.parquet
+data/processed/*.csv
+data/processed/*.parquet
+data/features/*.parquet
+*.db
+*.sqlite
+*.sqlite3
+
+# Models
+models/*.pkl
+models/*.joblib
+models/*.h5
+models/*.pt
+models/*.pth
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Logs
+logs/
+*.log
+*.log.*
+
+# Testing
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+*.swp
+*~
+
+# Monitoring & Prometheus
+prometheus_data/

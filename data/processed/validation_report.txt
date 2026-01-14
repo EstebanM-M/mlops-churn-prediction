@@ -1,0 +1,14 @@
+============================================================
+DATA VALIDATION REPORT
+============================================================
+
+Overall Status: PASSED
+Checks: 6/6 passed
+
+--- Statistics ---
+  total_rows: 7043
+  total_columns: 21
+  missing_values: 0
+  duplicate_rows: 0
+  churn_rate: 0.2653698707936959
+============================================================
