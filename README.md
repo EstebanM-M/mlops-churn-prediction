@@ -2,7 +2,6 @@
 
 End-to-end ML pipeline for customer churn prediction with automated training, monitoring, and deployment.
 
-**Project Status:** 🟢 60% Complete (Data Pipeline + Feature Store + Training Pipeline)
 
 ---
 
@@ -60,7 +59,7 @@ uvicorn serving.api:app --reload
   - Custom data validation (6 quality checks)
   - Stratified train/val/test split (64%/16%/20%)
   
-- **Feature Store** ⭐
+- **Feature Store** 
   - 46 engineered features from 21 raw columns
   - Feature caching with Parquet format
   - Feature validation and statistics
@@ -72,7 +71,7 @@ uvicorn serving.api:app --reload
   - Automatic model comparison and selection
   - Best model: **CatBoost (ROC-AUC: 0.8485)**
 
-- **API Serving** ⭐  ← AGREGAR ESTA SECCIÓN
+- **API Serving** 
   - FastAPI REST API with Swagger documentation
   - `/predict` endpoint for single predictions
   - `/predict/batch` endpoint for batch predictions
@@ -80,9 +79,16 @@ uvicorn serving.api:app --reload
   - Pydantic validation for request/response
   - Automatic model loading on startup
 
+  - **Monitoring & Drift Detection** 
+  - Statistical drift detection (Kolmogorov-Smirnov test)
+  - Automated drift alerts and reporting
+  - `/monitoring/check-drift` endpoint
+  - `/monitoring/summary` endpoint
+  - Integration with webhook retraining system
+```
+
 ### 🔜 Coming Soon
 
-- Evidently AI drift detection and monitoring
 - Streamlit dashboard for predictions
 - CI/CD pipeline with GitHub Actions
 - Docker multi-service deployment
@@ -90,41 +96,39 @@ uvicorn serving.api:app --reload
 
 ---
 
-## 🏗️ Architecture
+## 🏗️ System Architecture
 ```
-┌─────────────────────────────────────────────────────────┐
-│                    DATA PIPELINE                        │
-│  Raw Data → Validation → Train/Val/Test Split           │
-└─────────────────────────────────────────────────────────┘
-                        ↓
-┌─────────────────────────────────────────────────────────┐
-│                   FEATURE STORE                         │
-│  Raw Features → Engineered Features → Cached (.parquet)│
-│  • 46 features created                                  │
-│  • Validation checks                                    │
-│  • Version control                                      │
-└─────────────────────────────────────────────────────────┘
-                        ↓
-┌─────────────────────────────────────────────────────────┐
-│                  TRAINING PIPELINE                      │
-│  MLflow Tracking → 3 Models → Best Model Selection      │
-│  • XGBoost    (ROC-AUC: 0.8403)                         │
-│  • LightGBM   (ROC-AUC: 0.8441)                         │
-│  • CatBoost   (ROC-AUC: 0.8485) 🏆                      │
-└─────────────────────────────────────────────────────────┘
-                        ↓
-┌─────────────────────────────────────────────────────────┐
-│                  FASTAPI SERVING                        │  
-│  REST API → /predict → /health → Swagger Docs           │
-│  • Model: CatBoost champion                             │
-│  • Validation: Pydantic                                 │
-│  • Features: Feature Store integration                  │
-└─────────────────────────────────────────────────────────┘
-                        ↓
-┌─────────────────────────────────────────────────────────┐
-│             MONITORING (WIP)                            │
-│  Drift Detection → Alerts → Auto-retrain                │
-└─────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                         DATA LAYER                              │
+│  Raw CSV → Validation → Train/Val/Test Split → Feature Store   │
+│  (7,043 samples → 46 engineered features → Parquet cache)      │
+└────────────────────────────┬────────────────────────────────────┘
+                             ↓
+┌─────────────────────────────────────────────────────────────────┐
+│                       TRAINING LAYER                            │
+│  XGBoost + LightGBM + CatBoost → MLflow Tracking               │
+│  Automatic model comparison → Champion selection               │
+│  Best: CatBoost (ROC-AUC: 0.8485)                              │
+└────────────────────────────┬────────────────────────────────────┘
+                             ↓
+┌─────────────────────────────────────────────────────────────────┐
+│                       SERVING LAYER                             │
+│  FastAPI REST API + Pydantic Validation + Swagger Docs         │
+│  Endpoints: /predict, /health, /batch                          │
+└────────────────────────────┬────────────────────────────────────┘
+                             ↓
+┌─────────────────────────────────────────────────────────────────┐
+│                    AUTOMATION LAYER                             │
+│  Webhooks: /webhook/retrain, /webhook/new-data                 │
+│  Background job system with status tracking                     │
+└────────────────────────────┬────────────────────────────────────┘
+                             ↓
+┌─────────────────────────────────────────────────────────────────┐
+│                     MONITORING LAYER                            │
+│  Drift Detection (KS test) + Automated Alerts                  │
+│  Health checks + Performance tracking                           │
+│  Auto-trigger retraining when drift exceeds threshold          │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -233,8 +237,8 @@ mlops-churn-prediction/
 - [x] Training pipeline with 3 models + MLflow
 - [x] Model comparison and selection
 - [x] FastAPI serving layer
-- [ ] Webhook-driven automation
-- [ ] Drift detection & monitoring
+- [x] Webhook-driven automation
+- [x] Drift detection & monitoring
 - [ ] Streamlit dashboard
 - [ ] CI/CD with GitHub Actions
 - [ ] Docker deployment
@@ -246,26 +250,56 @@ mlops-churn-prediction/
 
 ## 🔍 Key Features Explained
 
-### Feature Store
+### Feature Store 
 Centralized feature engineering ensuring consistency between training and serving:
-- Prevents training-serving skew
-- Caches computed features for performance
-- Single source of truth for all features
-- Feature validation and statistics
+- Prevents training-serving skew (same features in training and production)
+- Caches computed features in Parquet format for performance
+- Single source of truth for all 46 engineered features
+- Built-in feature validation and statistical summaries
+- Version control for feature definitions
 
 ### MLflow Integration
-Complete experiment tracking:
-- All training runs logged automatically
-- Model parameters and metrics stored
-- Model versioning and registry
-- Easy model comparison
+Complete experiment tracking and model management:
+- All training runs logged automatically with parameters and metrics
+- Model versioning and registry for reproducibility
+- Easy model comparison across experiments
+- Champion model selection and promotion
+- Experiment visualization and analysis
 
-### Model Selection
-Automated champion selection based on ROC-AUC:
-- Trains 3 models in parallel
-- Compares performance metrics
-- Selects best model automatically
-- Saves champion for serving
+### Automated Model Selection
+Intelligent champion selection based on ROC-AUC:
+- Trains 3 models in parallel (XGBoost, LightGBM, CatBoost)
+- Compares performance metrics across validation set
+- Automatically selects and saves best model
+- Champion model ready for immediate serving
+
+### Webhook Automation System
+Event-driven automation for MLOps workflows:
+- `/webhook/retrain`: Trigger model retraining on-demand
+- `/webhook/new-data`: Notify system of new data arrivals
+- Background job system with status tracking
+- Automatic retraining when data threshold is met
+- Job queue with monitoring and cancellation support
+
+### Drift Detection & Monitoring
+Production model health monitoring:
+- Statistical drift detection using Kolmogorov-Smirnov test
+- Monitors 28 numerical features for distribution changes
+- Automated alerts when drift exceeds configurable thresholds
+- Integration with webhook system for auto-retraining
+- Detailed drift reports with per-feature analysis
+- `/monitoring/check-drift`: On-demand drift analysis
+- `/monitoring/summary`: Comprehensive system health status
+
+### API Serving
+Production-ready REST API with FastAPI:
+- `/predict`: Single customer churn prediction
+- `/predict/batch`: Batch predictions for multiple customers
+- `/health`: Service health check endpoint
+- Pydantic validation for request/response data
+- Interactive Swagger documentation at `/docs`
+- Automatic feature engineering via Feature Store
+- Risk level classification (Low/Medium/High)
 
 ---
 
