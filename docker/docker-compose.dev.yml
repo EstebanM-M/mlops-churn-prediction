@@ -1,0 +1,38 @@
+# Development docker-compose with hot reload
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.api
+    container_name: churn-api-dev
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../src:/app/src  # Hot reload
+      - ../models:/app/models
+      - ../data:/app/data
+    command: uvicorn serving.api:app --host 0.0.0.0 --port 8000 --reload
+    networks:
+      - churn-network
+
+  dashboard:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.dashboard
+    container_name: churn-dashboard-dev
+    ports:
+      - "8501:8501"
+    volumes:
+      - ../src:/app/src  # Hot reload
+    environment:
+      - API_URL=http://api:8000
+    networks:
+      - churn-network
+    depends_on:
+      - api
+
+networks:
+  churn-network:
+    driver: bridge
