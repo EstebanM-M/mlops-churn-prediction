@@ -1,458 +1,280 @@
-# 🚀 MLOps Churn Prediction Pipeline
+# 🚀 MLOps Churn Prediction System
 
-End-to-end ML pipeline for customer churn prediction with automated training, monitoring, and deployment.
+End-to-end MLOps system for customer churn prediction with automated training, drift detection, and production-ready deployment.
 
+![Python](https://img.shields.io/badge/Python-3.12-blue)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.104-green)
+![Docker](https://img.shields.io/badge/Docker-Enabled-blue)
+![Tests](https://img.shields.io/badge/Tests-13%20passing-success)
+![Coverage](https://img.shields.io/badge/Coverage-36%25-yellow)
 
----
+## 📊 Project Overview
 
-## ⚡ Quick Start
-```bash
-# 1. Clone repository
-git clone https://github.com/EstebanM-M/mlops-churn-prediction
-cd mlops-churn-prediction
+This project demonstrates production-grade MLOps practices for predicting customer churn. It features automated model training, real-time drift detection, webhook-driven retraining, and a complete monitoring stack.
 
-# 2. Create virtual environment
-python -m venv venv
+**Key Metrics:**
+- 🎯 Model Accuracy: 81%
+- 📈 ROC-AUC: 0.85
+- ⚡ API Response Time: <100ms
+- 🔧 46 Engineered Features
 
-# Windows:
-venv\Scripts\activate
-# Linux/Mac:
-source venv/bin/activate
-
-# 3. Install dependencies
-pip install -e .
-
-# 4. Run the complete pipeline
-# Download data
-python -m data.data_loader
-
-# Validate data quality
-python -m data.data_validator
-
-# Split data into train/val/test
-python -m data.data_splitter
-
-# Create features
-python -m features.feature_store
-
-# Train models
-python -m training.train
-
-# 5. View MLflow results
-mlflow ui
-# Open browser at http://localhost:5000
-
-# 6. Start API server
-uvicorn serving.api:app --reload
-# Open browser at http://localhost:8000/docs
-
-# 7. Start Dashboard (in another terminal)
-streamlit run src/frontend/app.py
-# Open browser at http://localhost:8501
-
+## 🏗️ Architecture
+```
+┌─────────────────────────────────────────────────────────┐
+│                   User Interfaces                        │
+├──────────────────┬──────────────────┬───────────────────┤
+│  Streamlit UI    │   FastAPI Docs   │   MLflow UI       │
+│  Port 8501       │   Port 8000      │   Port 5000       │
+└────────┬─────────┴────────┬─────────┴────────┬──────────┘
+         │                  │                  │
+         ▼                  ▼                  ▼
+┌─────────────────────────────────────────────────────────┐
+│              Docker Container Layer                      │
+├──────────────────┬──────────────────┬───────────────────┤
+│   Dashboard      │      API         │     MLflow        │
+│   Container      │   Container      │   Container       │
+└────────┬─────────┴────────┬─────────┴────────┬──────────┘
+         │                  │                  │
+         └──────────────────┴──────────────────┘
+                            │
+                            ▼
+                  ┌─────────────────┐
+                  │  Feature Store  │
+                  │  Model Registry │
+                  │  Data Pipeline  │
+                  └─────────────────┘
 ```
 
----
+## ✨ Features
 
-## 🎯 Features
+### 🤖 Machine Learning
+- **Multi-Model Training**: XGBoost, LightGBM, CatBoost
+- **Automated Model Selection**: Best model based on ROC-AUC
+- **Feature Engineering**: 46 features from raw data
+- **Hyperparameter Optimization**: Grid search with cross-validation
 
-### ✅ Implemented
+### 🔧 MLOps Infrastructure
+- **Feature Store**: Versioned feature management with Parquet
+- **Experiment Tracking**: MLflow for metrics, parameters, and artifacts
+- **Model Registry**: Versioned model storage and lifecycle management
+- **Drift Detection**: Evidently AI for data and prediction drift
 
-- **Data Pipeline**
-  - Automatic dataset download from IBM repository
-  - Custom data validation (6 quality checks)
-  - Stratified train/val/test split (64%/16%/20%)
-  
-- **Feature Store** 
-  - 46 engineered features from 21 raw columns
-  - Feature caching with Parquet format
-  - Feature validation and statistics
-  - Single source of truth for training and serving
+### 🚀 Production Ready
+- **REST API**: FastAPI with 15+ endpoints
+- **Real-time Predictions**: Sub-100ms response time
+- **Batch Processing**: Async batch prediction endpoint
+- **Health Monitoring**: Prometheus-compatible metrics
+- **Webhook Automation**: Triggered retraining on drift detection
 
-- **Training Pipeline**
-  - 3 Gradient Boosting models: XGBoost, LightGBM, CatBoost
-  - MLflow experiment tracking
-  - Automatic model comparison and selection
-  - Best model: **CatBoost (ROC-AUC: 0.8485)**
+### 🐳 Deployment
+- **Docker Containers**: Multi-service orchestration
+- **Health Checks**: Automated service health verification
+- **Auto-restart**: Resilient container management
+- **Volume Mounting**: Persistent data and models
 
-- **API Serving** 
-  - FastAPI REST API with Swagger documentation
-  - `/predict` endpoint for single predictions
-  - `/predict/batch` endpoint for batch predictions
-  - `/health` endpoint for monitoring
-  - Pydantic validation for request/response
-  - Automatic model loading on startup
-
-  - **Monitoring & Drift Detection** 
-  - Statistical drift detection (Kolmogorov-Smirnov test)
-  - Automated drift alerts and reporting
-  - `/monitoring/check-drift` endpoint
-  - `/monitoring/summary` endpoint
-  - Integration with webhook retraining system
-
-  - **Interactive Dashboard** 🎨
-    - Streamlit web interface
-    - Single and batch predictions
-    - Model insights visualization
-    - Real-time drift monitoring
-    - Downloadable CSV results
-
-```
----
-
-### 🔜 Coming Soon
-
-- CI/CD pipeline with GitHub Actions
-- Docker multi-service deployment
-- Automated retraining triggers
-
----
-
-## 🏗️ System Architecture
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                         DATA LAYER                              │
-│  Raw CSV → Validation → Train/Val/Test Split → Feature Store   │
-│  (7,043 samples → 46 engineered features → Parquet cache)      │
-└────────────────────────────┬────────────────────────────────────┘
-                             ↓
-┌─────────────────────────────────────────────────────────────────┐
-│                       TRAINING LAYER                            │
-│  XGBoost + LightGBM + CatBoost → MLflow Tracking               │
-│  Automatic model comparison → Champion selection               │
-│  Best: CatBoost (ROC-AUC: 0.8485)                              │
-└────────────────────────────┬────────────────────────────────────┘
-                             ↓
-┌─────────────────────────────────────────────────────────────────┐
-│                       SERVING LAYER                             │
-│  FastAPI REST API + Pydantic Validation + Swagger Docs         │
-│  Endpoints: /predict, /health, /batch                          │
-└────────────────────────────┬────────────────────────────────────┘
-                             ↓
-┌─────────────────────────────────────────────────────────────────┐
-│                    AUTOMATION LAYER                             │
-│  Webhooks: /webhook/retrain, /webhook/new-data                 │
-│  Background job system with status tracking                     │
-└────────────────────────────┬────────────────────────────────────┘
-                             ↓
-┌─────────────────────────────────────────────────────────────────┐
-│                     MONITORING LAYER                            │
-│  Drift Detection (KS test) + Automated Alerts                  │
-│  Health checks + Performance tracking                           │
-│  Auto-trigger retraining when drift exceeds threshold          │
-└─────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## 🛠️ Tech Stack
-
-**Machine Learning:**
-- scikit-learn 1.3+
-- XGBoost 2.0+
-- LightGBM 4.1+
-- CatBoost 1.2+
-
-**MLOps:**
-- MLflow 2.9+ (Experiment tracking & model registry)
-- Statistical Drift Detection (KS test)  ← NUEVO
-- DVC 3.30+ (Data versioning - configured)
-
-**API & Web:**
-- FastAPI 0.104+ (API serving - WIP)
-- Streamlit 1.29+ (Dashboard - WIP)
-- Pydantic 2.5+ (Data validation)
-
-**Database:**
-- SQLAlchemy 2.0+ (ORM)
-- PostgreSQL (via psycopg2-binary)
-
-**Visualization:**
-- Matplotlib 3.8+
-- Seaborn 0.13+
-- Plotly 5.18+
-
-**Development:**
-- pytest 7.4+ (Testing)
-- black 23.11+ (Code formatting)
-- isort 5.12+ (Import sorting)
-- pre-commit 3.5+ (Git hooks)
-
----
-
-## 📦 Project Structure
+## 📂 Project Structure
 ```
 mlops-churn-prediction/
 ├── src/
-│   ├── data/
-│   │   ├── __init__.py
-│   │   ├── data_loader.py       # Download & load data
-│   │   ├── data_validator.py    # Data quality checks
-│   │   └── data_splitter.py     # Train/val/test split
-│   ├── features/
-│   │   ├── __init__.py
-│   │   └── feature_store.py     # Feature engineering
-│   ├── training/
-│   │   ├── __init__.py
-│   │   └── train.py             # Model training with MLflow
-│   ├── serving/                 # (WIP)
-│   │   ├── api.py
-│   │   └── webhooks.py
-│   ├── monitoring/              # (WIP)
-│   │   └── drift_detector.py
-│   └── frontend/                # (WIP)
-│       └── app.py
-├── data/
-│   ├── raw/                     # Raw CSV data
-│   ├── processed/               # Train/val/test splits
-│   └── features/                # Cached features (parquet)
-├── models/                      # Saved models (.joblib)
-├── mlruns/                      # MLflow experiments
-├── tests/                       # Unit & integration tests (WIP)
-├── docker/                      # Docker configs (WIP)
-├── .github/workflows/           # CI/CD pipelines (WIP)
-├── setup.py                     # Package configuration
-├── requirements.txt             # Dependencies (-e .)
-├── .gitignore                   # Git ignore rules
-└── README.md                    # This file
+│   ├── data/              # Data loading and validation
+│   ├── features/          # Feature engineering & store
+│   ├── training/          # Model training pipeline
+│   ├── serving/           # FastAPI application
+│   ├── monitoring/        # Drift detection & metrics
+│   └── frontend/          # Streamlit dashboard
+├── tests/
+│   ├── unit/              # Unit tests
+│   └── integration/       # Integration tests
+├── docker/
+│   ├── Dockerfile.api
+│   ├── Dockerfile.dashboard
+│   ├── Dockerfile.mlflow
+│   └── docker-compose.yml
+├── models/                # Trained models
+├── data/                  # Raw and processed data
+├── setup.bat              # Initial setup script
+├── demo-start.bat         # Start demo environment
+├── demo-stop.bat          # Stop demo environment
+└── quick-check.bat        # System health check
 ```
 
----
+## 🚀 Quick Start
 
-## 📊 Current Results
+### Prerequisites
+- Python 3.12+
+- Docker Desktop
+- 8GB RAM minimum
 
-### Dataset
-- **Source:** IBM Telco Customer Churn
-- **Total Samples:** 7,043 customers
-- **Features:** 21 raw → 46 engineered
-- **Target:** Churn (Yes/No)
-- **Class Distribution:** 73.5% No Churn, 26.5% Churn
+### Installation
 
-### Model Performance (Validation Set)
+**1. Clone the repository:**
+```bash
+git clone https://github.com/EstebanM-M/mlops-churn-prediction.git
+cd mlops-churn-prediction
+```
 
-| Model     | ROC-AUC | Accuracy | F1 Score | Precision | Recall |
-|-----------|---------|----------|----------|-----------|--------|
-| 🏆 CatBoost | **0.8485** | 81.10% | 0.5832 | 70.28% | 49.83% |
-| LightGBM  | 0.8441  | 80.75%   | 0.5819   | 68.64%    | 50.50% |
-| XGBoost   | 0.8403  | 80.57%   | 0.5764   | 68.35%    | 49.83% |
+**2. Run automated setup:**
+```cmd
+setup.bat
+```
 
-**Champion Model:** CatBoost v1  
-**Saved at:** `models/champion_catboost_v1.joblib`
+This will:
+- Create virtual environment
+- Install dependencies
+- Train initial model
+- Build Docker images
 
----
+**3. Start the demo environment:**
+```cmd
+demo-start.bat
+```
 
-## 🚧 Development Status
+**4. Access the services:**
+- 📊 Dashboard: http://localhost:8501
+- 🔧 API Docs: http://localhost:8000/docs
+- 📈 MLflow UI: http://localhost:5000
 
-- [x] Project setup & configuration
-- [x] Data pipeline (loader, validator, splitter)
-- [x] Feature Store with 46 engineered features
-- [x] Training pipeline with 3 models + MLflow
-- [x] Model comparison and selection
-- [x] FastAPI serving layer
-- [x] Webhook-driven automation
-- [x] Drift detection & monitoring
-- [x] Streamlit dashboard
-- [ ] CI/CD with GitHub Actions
-- [ ] Docker deployment
-- [ ] Comprehensive testing
-- [ ] Documentation (MkDocs)
+## 📖 Usage
 
+### Making Predictions
 
----
+**Via Dashboard:**
+1. Navigate to http://localhost:8501
+2. Go to "Single Prediction" tab
+3. Fill in customer details
+4. Click "Predict Churn"
 
-## 🔍 Key Features Explained
+**Via API:**
+```bash
+curl -X POST "http://localhost:8000/predict" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "customerID": "TEST-001",
+    "tenure": 12,
+    "MonthlyCharges": 70.35,
+    "Contract": "Month-to-month",
+    ...
+  }'
+```
 
-### Feature Store 
-Centralized feature engineering ensuring consistency between training and serving:
-- Prevents training-serving skew (same features in training and production)
-- Caches computed features in Parquet format for performance
-- Single source of truth for all 46 engineered features
-- Built-in feature validation and statistical summaries
-- Version control for feature definitions
+### Training Models
+```cmd
+# Set MLflow tracking
+set MLFLOW_TRACKING_URI=http://localhost:5000
 
-### MLflow Integration
-Complete experiment tracking and model management:
-- All training runs logged automatically with parameters and metrics
-- Model versioning and registry for reproducibility
-- Easy model comparison across experiments
-- Champion model selection and promotion
-- Experiment visualization and analysis
+# Run training
+python src/training/train.py
+```
 
-### Automated Model Selection
-Intelligent champion selection based on ROC-AUC:
-- Trains 3 models in parallel (XGBoost, LightGBM, CatBoost)
-- Compares performance metrics across validation set
-- Automatically selects and saves best model
-- Champion model ready for immediate serving
+### Running Tests
+```cmd
+# Run all tests
+pytest
 
-### Webhook Automation System
-Event-driven automation for MLOps workflows:
-- `/webhook/retrain`: Trigger model retraining on-demand
-- `/webhook/new-data`: Notify system of new data arrivals
-- Background job system with status tracking
-- Automatic retraining when data threshold is met
-- Job queue with monitoring and cancellation support
+# With coverage
+pytest --cov=src --cov-report=html
+```
 
-### Drift Detection & Monitoring
-Production model health monitoring:
-- Statistical drift detection using Kolmogorov-Smirnov test
-- Monitors 28 numerical features for distribution changes
-- Automated alerts when drift exceeds configurable thresholds
-- Integration with webhook system for auto-retraining
-- Detailed drift reports with per-feature analysis
-- `/monitoring/check-drift`: On-demand drift analysis
-- `/monitoring/summary`: Comprehensive system health status
+## 🔬 Model Performance
 
-### API Serving
-Production-ready REST API with FastAPI:
-- `/predict`: Single customer churn prediction
-- `/predict/batch`: Batch predictions for multiple customers
-- `/health`: Service health check endpoint
-- Pydantic validation for request/response data
-- Interactive Swagger documentation at `/docs`
-- Automatic feature engineering via Feature Store
-- Risk level classification (Low/Medium/High)
+| Model      | Accuracy | Precision | Recall | F1 Score | ROC-AUC |
+|------------|----------|-----------|--------|----------|---------|
+| CatBoost   | 0.811    | 0.703     | 0.498  | 0.583    | **0.849** |
+| LightGBM   | 0.807    | 0.686     | 0.505  | 0.582    | 0.844   |
+| XGBoost    | 0.806    | 0.683     | 0.498  | 0.576    | 0.840   |
 
-### Interactive Dashboard
-  - Streamlit web interface
-  - Single and batch predictions
-  - Model insights visualization
-  - Real-time monitoring
-  - Downloadable results
-
----
+**Best Model:** CatBoost (ROC-AUC: 0.849)
 
 ## 🧪 Testing
-```bash
-# Run all tests (when implemented)
-pytest tests/
 
-# Run with coverage
-pytest --cov=src tests/
+- **13 Tests** covering:
+  - API endpoints
+  - Feature Store operations
+  - Drift detection
+  - Model predictions
+- **36% Code Coverage**
+- **CI/CD Ready** (GitHub Actions compatible)
 
-# Run specific test file
-pytest tests/unit/test_feature_store.py
-```
+## 🛠️ Tech Stack
 
----
+**ML & Data:**
+- Scikit-learn
+- XGBoost, LightGBM, CatBoost
+- Pandas, NumPy
+- MLflow
 
-## 📝 Example Usage
+**Backend:**
+- FastAPI
+- Uvicorn
+- SQLAlchemy
+- Pydantic
 
-### Training a New Model
-```python
-from features.feature_store import FeatureStore
-from training.train import ModelTrainer
+**Frontend:**
+- Streamlit
+- Plotly
 
-# Load features
-feature_store = FeatureStore()
-train_features = feature_store.load_features("train")
-val_features = feature_store.load_features("val")
+**MLOps:**
+- Docker & Docker Compose
+- Evidently AI
+- Prometheus
 
-# Train models
-trainer = ModelTrainer()
-results = trainer.train_all_models(train_features, val_features)
+**Testing:**
+- Pytest
+- Coverage.py
 
-# Compare and save best
-comparison = trainer.compare_models(results)
-print(comparison)
+## 📊 API Endpoints
 
-best_name, best_model, best_metrics = trainer.select_best_model(results)
-trainer.save_model(best_model, f"champion_{best_name}")
-```
+### Prediction
+- `POST /predict` - Single prediction
+- `POST /predict/batch` - Batch predictions
 
-### Creating Features
-```python
-from features.feature_store import FeatureStore
-import pandas as pd
+### Monitoring
+- `GET /health` - Service health check
+- `GET /monitoring/health` - Monitoring system status
+- `GET /monitoring/metrics` - Prometheus metrics
 
-# Create Feature Store
-fs = FeatureStore()
+### Webhooks
+- `POST /webhook/retrain` - Trigger model retraining
+- `POST /webhook/drift-alert` - Drift detection alert
 
-# Load raw data
-df = pd.read_csv("data/raw/telco_churn.csv")
+## 🔍 Monitoring & Drift Detection
 
-# Create features
-features_df = fs.create_features(df)
+The system automatically monitors:
+- **Data Drift**: Distribution changes in input features
+- **Prediction Drift**: Changes in model outputs
+- **Model Performance**: Accuracy degradation over time
 
-# Validate features
-validation = fs.validate_features(features_df)
-print(validation)
+**Alerts trigger when:**
+- Data drift score > 0.5
+- Prediction drift detected
+- Model accuracy drops > 5%
 
-# Save features
-fs.save_features(features_df, "train", version="v1")
-```
+## 🤝 Contributing
 
-### Making Predictions via API
-```python
-import requests
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-# Customer data
-customer = {
-    "customerID": "TEST-001",
-    "gender": "Female",
-    "SeniorCitizen": 0,
-    "Partner": "Yes",
-    "Dependents": "No",
-    "tenure": 12,
-    "PhoneService": "Yes",
-    "MultipleLines": "No",
-    "InternetService": "Fiber optic",
-    "OnlineSecurity": "No",
-    "OnlineBackup": "Yes",
-    "DeviceProtection": "No",
-    "TechSupport": "No",
-    "StreamingTV": "Yes",
-    "StreamingMovies": "Yes",
-    "Contract": "Month-to-month",
-    "PaperlessBilling": "Yes",
-    "PaymentMethod": "Electronic check",
-    "MonthlyCharges": 70.35,
-    "TotalCharges": 844.20
-}
+## 📝 License
 
-# Make prediction
-response = requests.post("http://localhost:8000/predict", json=customer)
-prediction = response.json()
-
-print(f"Churn Probability: {prediction['churn_probability']:.2%}")
-print(f"Prediction: {prediction['churn_prediction']}")
-print(f"Risk Level: {prediction['risk_level']}")
-```
-
----
+This project is licensed under the MIT License.
 
 ## 👤 Author
 
-**Esteban**  
-Electronic Engineer (Escuela Colombiana de Ingeniería Julio Garavito, 2024)  
-Transitioning to ML/AI Engineering
-
-**Skills Demonstrated:**
-- End-to-end ML pipeline design
-- MLOps best practices
-- Feature engineering
-- Model training and evaluation
-- Experiment tracking with MLflow
-- Clean code architecture
-
----
-
-## 📄 License
-
-MIT License - See LICENSE file for details
-
----
+**Esteban Morales**
+- GitHub: [EstebanM-M](https://github.com/EstebanM-M)
+- LinkedIn: [Esteban_Morales_Mahecha] (https://www.linkedin.com/in/esteban-morales-mahecha/)
 
 ## 🙏 Acknowledgments
 
-- Dataset: [IBM Telco Customer Churn](https://github.com/IBM/telco-customer-churn-on-icp4d)
-- Inspired by production ML systems at Uber, Airbnb, and Netflix
+- Telco Customer Churn Dataset
+- MLflow Community
+- FastAPI Documentation
+
+## 📧 Contact
+
+For questions or opportunities, reach out via:
+- Email: estebanmmahecha@outlook.com 
+- LinkedIn: [Esteban_Morales_Mahecha](https://www.linkedin.com/in/esteban-morales-mahecha/)
 
 ---
 
-## 📞 Contact
-
-For questions or collaboration:
-- GitHub: https://github.com/EstebanM-M?tab=repositories
-- LinkedIn: https://www.linkedin.com/in/esteban-morales-mahecha/
-- Email: estebanmoralesm@outlook.com
+**⭐ If you find this project useful, please consider giving it a star!**
