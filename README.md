@@ -46,6 +46,10 @@ mlflow ui
 uvicorn serving.api:app --reload
 # Open browser at http://localhost:8000/docs
 
+# 7. Start Dashboard (in another terminal)
+streamlit run src/frontend/app.py
+# Open browser at http://localhost:8501
+
 ```
 
 ---
@@ -85,11 +89,19 @@ uvicorn serving.api:app --reload
   - `/monitoring/check-drift` endpoint
   - `/monitoring/summary` endpoint
   - Integration with webhook retraining system
+
+  - **Interactive Dashboard** 🎨
+    - Streamlit web interface
+    - Single and batch predictions
+    - Model insights visualization
+    - Real-time drift monitoring
+    - Downloadable CSV results
+
 ```
+---
 
 ### 🔜 Coming Soon
 
-- Streamlit dashboard for predictions
 - CI/CD pipeline with GitHub Actions
 - Docker multi-service deployment
 - Automated retraining triggers
@@ -143,7 +155,7 @@ uvicorn serving.api:app --reload
 
 **MLOps:**
 - MLflow 2.9+ (Experiment tracking & model registry)
-- Evidently AI 0.4+ (Drift detection - WIP)
+- Statistical Drift Detection (KS test)  ← NUEVO
 - DVC 3.30+ (Data versioning - configured)
 
 **API & Web:**
@@ -239,7 +251,7 @@ mlops-churn-prediction/
 - [x] FastAPI serving layer
 - [x] Webhook-driven automation
 - [x] Drift detection & monitoring
-- [ ] Streamlit dashboard
+- [x] Streamlit dashboard
 - [ ] CI/CD with GitHub Actions
 - [ ] Docker deployment
 - [ ] Comprehensive testing
@@ -300,6 +312,13 @@ Production-ready REST API with FastAPI:
 - Interactive Swagger documentation at `/docs`
 - Automatic feature engineering via Feature Store
 - Risk level classification (Low/Medium/High)
+
+### Interactive Dashboard
+  - Streamlit web interface
+  - Single and batch predictions
+  - Model insights visualization
+  - Real-time monitoring
+  - Downloadable results
 
 ---
 
