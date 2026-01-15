@@ -123,3 +123,10 @@ temp/
 
 # Monitoring & Prometheus
 prometheus_data/
+
+# CatBoost
+catboost_info/
+
+# MLflow
+mlruns/
+mlartifacts/
