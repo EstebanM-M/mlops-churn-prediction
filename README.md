@@ -42,6 +42,11 @@ python -m training.train
 # 5. View MLflow results
 mlflow ui
 # Open browser at http://localhost:5000
+
+# 6. Start API server
+uvicorn serving.api:app --reload
+# Open browser at http://localhost:8000/docs
+
 ```
 
 ---
@@ -67,9 +72,16 @@ mlflow ui
   - Automatic model comparison and selection
   - Best model: **CatBoost (ROC-AUC: 0.8485)**
 
+- **API Serving** ⭐  ← AGREGAR ESTA SECCIÓN
+  - FastAPI REST API with Swagger documentation
+  - `/predict` endpoint for single predictions
+  - `/predict/batch` endpoint for batch predictions
+  - `/health` endpoint for monitoring
+  - Pydantic validation for request/response
+  - Automatic model loading on startup
+
 ### 🔜 Coming Soon
 
-- FastAPI serving with webhook triggers
 - Evidently AI drift detection and monitoring
 - Streamlit dashboard for predictions
 - CI/CD pipeline with GitHub Actions
@@ -82,7 +94,7 @@ mlflow ui
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                    DATA PIPELINE                        │
-│  Raw Data → Validation → Train/Val/Test Split          │
+│  Raw Data → Validation → Train/Val/Test Split           │
 └─────────────────────────────────────────────────────────┘
                         ↓
 ┌─────────────────────────────────────────────────────────┐
@@ -95,15 +107,23 @@ mlflow ui
                         ↓
 ┌─────────────────────────────────────────────────────────┐
 │                  TRAINING PIPELINE                      │
-│  MLflow Tracking → 3 Models → Best Model Selection     │
-│  • XGBoost    (ROC-AUC: 0.8403)                        │
-│  • LightGBM   (ROC-AUC: 0.8441)                        │
-│  • CatBoost   (ROC-AUC: 0.8485) 🏆                     │
+│  MLflow Tracking → 3 Models → Best Model Selection      │
+│  • XGBoost    (ROC-AUC: 0.8403)                         │
+│  • LightGBM   (ROC-AUC: 0.8441)                         │
+│  • CatBoost   (ROC-AUC: 0.8485) 🏆                      │
 └─────────────────────────────────────────────────────────┘
                         ↓
 ┌─────────────────────────────────────────────────────────┐
-│             SERVING + MONITORING (WIP)                  │
-│  FastAPI → A/B Testing → Drift Detection → Alerts      │
+│                  FASTAPI SERVING                        │  
+│  REST API → /predict → /health → Swagger Docs           │
+│  • Model: CatBoost champion                             │
+│  • Validation: Pydantic                                 │
+│  • Features: Feature Store integration                  │
+└─────────────────────────────────────────────────────────┘
+                        ↓
+┌─────────────────────────────────────────────────────────┐
+│             MONITORING (WIP)                            │
+│  Drift Detection → Alerts → Auto-retrain                │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -212,7 +232,7 @@ mlops-churn-prediction/
 - [x] Feature Store with 46 engineered features
 - [x] Training pipeline with 3 models + MLflow
 - [x] Model comparison and selection
-- [ ] FastAPI serving layer
+- [x] FastAPI serving layer
 - [ ] Webhook-driven automation
 - [ ] Drift detection & monitoring
 - [ ] Streamlit dashboard
@@ -221,7 +241,6 @@ mlops-churn-prediction/
 - [ ] Comprehensive testing
 - [ ] Documentation (MkDocs)
 
-**Progress:** 🟢🟢🟢🟢🟢🟢⚪⚪⚪⚪ 60%
 
 ---
 
@@ -308,6 +327,43 @@ print(validation)
 
 # Save features
 fs.save_features(features_df, "train", version="v1")
+```
+
+### Making Predictions via API
+```python
+import requests
+
+# Customer data
+customer = {
+    "customerID": "TEST-001",
+    "gender": "Female",
+    "SeniorCitizen": 0,
+    "Partner": "Yes",
+    "Dependents": "No",
+    "tenure": 12,
+    "PhoneService": "Yes",
+    "MultipleLines": "No",
+    "InternetService": "Fiber optic",
+    "OnlineSecurity": "No",
+    "OnlineBackup": "Yes",
+    "DeviceProtection": "No",
+    "TechSupport": "No",
+    "StreamingTV": "Yes",
+    "StreamingMovies": "Yes",
+    "Contract": "Month-to-month",
+    "PaperlessBilling": "Yes",
+    "PaymentMethod": "Electronic check",
+    "MonthlyCharges": 70.35,
+    "TotalCharges": 844.20
+}
+
+# Make prediction
+response = requests.post("http://localhost:8000/predict", json=customer)
+prediction = response.json()
+
+print(f"Churn Probability: {prediction['churn_probability']:.2%}")
+print(f"Prediction: {prediction['churn_prediction']}")
+print(f"Risk Level: {prediction['risk_level']}")
 ```
 
 ---
