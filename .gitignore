@@ -130,3 +130,6 @@ catboost_info/
 # MLflow
 mlruns/
 mlartifacts/
+
+# Monitoring reports
+data/monitoring/

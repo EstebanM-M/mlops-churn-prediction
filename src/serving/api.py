@@ -12,6 +12,8 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
 from features.feature_store import FeatureStore
+from .webhooks import router as webhook_router
+from .monitoring_endpoints import router as monitoring_router, initialize_monitoring
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +23,9 @@ app = FastAPI(
     description="ML API for predicting customer churn",
     version="1.0.0",
 )
+
+app.include_router(webhook_router)
+app.include_router(monitoring_router)
 
 # Global variables for model and feature store
 model = None
@@ -137,6 +142,7 @@ def startup_event():
     try:
         load_model()
         initialize_feature_store()
+        initialize_monitoring()
         logger.info("✅ API startup complete")
     except Exception as e:
         logger.error(f"❌ Startup failed: {e}")
