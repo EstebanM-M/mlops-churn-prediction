@@ -2,7 +2,7 @@
 Model training with MLflow tracking.
 Trains multiple models and logs results to MLflow.
 """
-
+import os
 import logging
 from pathlib import Path
 from typing import Dict, List, Tuple
@@ -36,7 +36,7 @@ class ModelTrainer:
         self,
         experiment_name: str = "churn-prediction",
         model_dir: str = "models",
-        mlflow_tracking_uri: str = "./mlruns",
+        mlflow_tracking_uri: str = None,  # ← CAMBIA A None
     ):
         """
         Initialize ModelTrainer.
@@ -44,13 +44,16 @@ class ModelTrainer:
         Args:
             experiment_name: Name of MLflow experiment
             model_dir: Directory to save models
-            mlflow_tracking_uri: MLflow tracking URI
+            mlflow_tracking_uri: MLflow tracking URI (reads from env if not provided)
         """
         self.experiment_name = experiment_name
         self.model_dir = Path(model_dir)
         self.model_dir.mkdir(parents=True, exist_ok=True)
 
-        # Setup MLflow
+        # Setup MLflow - read from environment variable if not provided
+        if mlflow_tracking_uri is None:
+            mlflow_tracking_uri = os.getenv("MLFLOW_TRACKING_URI", "./mlruns")
+        
         mlflow.set_tracking_uri(mlflow_tracking_uri)
         mlflow.set_experiment(experiment_name)
 
